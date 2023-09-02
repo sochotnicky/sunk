@@ -15,7 +15,7 @@ use crate::{Client, Error, HlsPlaylist, Media, Result, Streamable};
 #[readonly::make]
 pub struct Song {
     /// Unique identifier for the song.
-    pub id: u64,
+    pub id: String,
     /// Title of the song. Prefers the song's ID3 tags, but will fall back to
     /// the file name.
     pub title: String,
@@ -78,7 +78,7 @@ impl Song {
     where
         U: Into<Option<usize>>,
     {
-        let args = Query::with("id", self.id)
+        let args = Query::with("id", &*self.id)
             .arg("count", count.into())
             .build();
 
@@ -152,7 +152,7 @@ impl Song {
     /// empty array) to disable adaptive streaming, or given a single value to
     /// force streaming at that bit rate.
     pub fn hls(&self, client: &Client, bit_rates: &[u64]) -> Result<HlsPlaylist> {
-        let args = Query::with("id", self.id)
+        let args = Query::with("id", &*self.id)
             .arg_list("bitrate", bit_rates)
             .build();
 
@@ -163,23 +163,23 @@ impl Song {
 
 impl Streamable for Song {
     fn stream(&self, client: &Client) -> Result<Vec<u8>> {
-        let mut q = Query::with("id", self.id);
+        let mut q = Query::with("id", &*self.id);
         q.arg("maxBitRate", self.stream_br);
         client.get_bytes("stream", q)
     }
 
     fn stream_url(&self, client: &Client) -> Result<String> {
-        let mut q = Query::with("id", self.id);
+        let mut q = Query::with("id", &*self.id);
         q.arg("maxBitRate", self.stream_br);
         client.build_url("stream", q)
     }
 
     fn download(&self, client: &Client) -> Result<Vec<u8>> {
-        client.get_bytes("download", Query::with("id", self.id))
+        client.get_bytes("download", Query::with("id", &*self.id))
     }
 
     fn download_url(&self, client: &Client) -> Result<String> {
-        client.build_url("download", Query::with("id", self.id))
+        client.build_url("download", Query::with("id", &*self.id))
     }
 
     fn encoding(&self) -> &str {

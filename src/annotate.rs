@@ -107,12 +107,12 @@ impl Annotatable for Album {
 
 impl Annotatable for Song {
     fn star(&self, client: &Client) -> Result<()> {
-        client.get("star", Query::with("id", self.id))?;
+        client.get("star", Query::with("id", self.id.to_string()))?;
         Ok(())
     }
 
     fn unstar(&self, client: &Client) -> Result<()> {
-        client.get("unstar", Query::with("id", self.id))?;
+        client.get("unstar", Query::with("id", self.id.to_string()))?;
         Ok(())
     }
 
@@ -121,7 +121,9 @@ impl Annotatable for Song {
             return Err(Error::Other("rating must be between 0 and 5 inclusive"));
         }
 
-        let args = Query::with("id", self.id).arg("rating", rating).build();
+        let args = Query::with("id", self.id.to_string())
+            .arg("rating", rating)
+            .build();
         client.get("setRating", args)?;
         Ok(())
     }
@@ -131,7 +133,7 @@ impl Annotatable for Song {
         B: Into<Option<bool>>,
         T: Into<Option<&'a str>>,
     {
-        let args = Query::with("id", self.id)
+        let args = Query::with("id", self.id.to_string())
             .arg("time", time.into())
             .arg("submission", now_playing.into().map(|b| !b))
             .build();
